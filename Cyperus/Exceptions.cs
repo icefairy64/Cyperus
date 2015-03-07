@@ -6,9 +6,12 @@ using System.Threading.Tasks;
 
 namespace Cyperus
 {
-    abstract public class Node
+    public class TypeMismatchException : Exception
     {
-        public List<Socket> Inputs { get; protected set; }
-        public List<Socket> Outputs { get; protected set; }
+        public TypeMismatchException(string message)
+            : base(message)
+        {
+
+        }
     }
 }

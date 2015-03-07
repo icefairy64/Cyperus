@@ -6,9 +6,16 @@ using System.Threading.Tasks;
 
 namespace Cyperus
 {
-    abstract public class Socket
+    /// <summary>
+    /// Represents a socket that can send and accept typed data
+    /// </summary>
+    /// <typeparam name="T">Type of data that socket is able to work with</typeparam>
+    public class Socket<T> : AbstractSocket
     {
-        public Type DataType { get; protected set; }
-        public List<Socket> Clients { get; protected set; }
+        public Socket(IAcceptor acceptor, string name)
+            : base(acceptor, name, typeof(T))
+        {
+
+        }
     }
 }
