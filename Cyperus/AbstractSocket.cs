@@ -13,10 +13,11 @@ namespace Cyperus
     abstract public class AbstractSocket : IAcceptor, ISender
     {
         public Type DataType { get; protected set; }
-        public ImmutableList<AbstractSocket> Clients { get; protected set; }
         public string Name { get; protected set; }
 
         protected IAcceptor Owner;
+        protected ImmutableList<AbstractSocket> Clients;
+        protected Dictionary<AbstractSocket, Connection> Connections;
 
         protected AbstractSocket(IAcceptor acceptor, string name, Type dataType)
         {
@@ -25,6 +26,7 @@ namespace Cyperus
             DataType = dataType;
 
             Clients = ImmutableList.Create<AbstractSocket>();
+            Connections = new Dictionary<AbstractSocket, Connection>();
         }
 
         public void AddClient(AbstractSocket client)
@@ -32,6 +34,11 @@ namespace Cyperus
             if (!client.DataType.IsSubclassOf(DataType))
             {
                 throw new TypeMismatchException(String.Format("Types of sockets {0} and {1} don't match", this, client));
+            }
+
+            if (Clients.Contains(client))
+            {
+                return;
             }
 
             Clients = Clients.Add(client);
@@ -75,9 +82,58 @@ namespace Cyperus
             await Task.WhenAll(query.ToArray<Task>());
         }
 
+        public Connection ConnectTo(AbstractSocket socket)
+        {
+            if (socket == this)
+            {
+                return null;
+            }
+            
+            if (Owner == null)
+            {
+                // This is client socket; we should add it to another socket's client list
+                return socket.ConnectTo(this);
+            }
+
+            if (Clients.Contains(socket))
+            {
+                return Connections[socket];
+            }
+
+            var conn = new Connection(this, socket);
+            AddClient(socket);
+            Connections.Add(socket, conn);
+            socket.AcceptConnection(this, conn);
+
+            return conn;
+        }
+
+        public void AcceptConnection(AbstractSocket sender, Connection conn)
+        {
+            if (!Connections.ContainsKey(sender))
+            {
+                Connections.Add(sender, conn);
+            }
+        }
+
+        public void Destroy()
+        {
+            foreach (var conn in Connections.Values)
+            {
+                conn.Destroy();
+            }
+
+            Connections.Clear();
+        }
+
         public override string ToString()
         {
             return String.Format("{0} ({1})", Name, DataType);
+        }
+
+        ~AbstractSocket()
+        {
+            Destroy();
         }
     }
 }

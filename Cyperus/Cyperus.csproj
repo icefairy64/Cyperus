@@ -43,6 +43,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractNode.cs" />
+    <Compile Include="Connection.cs" />
+    <Compile Include="Environment.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="HierarchyInterfaces.cs" />
     <Compile Include="Output.cs" />
@@ -53,6 +55,7 @@
     <Compile Include="Producer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

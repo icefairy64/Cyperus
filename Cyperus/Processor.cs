@@ -11,7 +11,7 @@ namespace Cyperus
         public Processor(string name)
             : base(name)
         {
-
+            
         }
         
         public override async Task AcceptData(ISender sender, Object data)
