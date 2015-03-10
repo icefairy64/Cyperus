@@ -15,18 +15,10 @@ namespace Cyperus
     }
 
     /// <summary>
-    /// Represents an object that can process data which has been already received from various sockets
-    /// </summary>
-    public interface IProcessor
-    {
-        Task<Object> ProcessData(IAcceptor acceptor, Object data);
-    }
-
-    /// <summary>
     /// Represents an object that can send data to various sockets
     /// </summary>
     public interface ISender
     {
-        Task SendData(IAcceptor receiver, Object data);
+        
     }
 }

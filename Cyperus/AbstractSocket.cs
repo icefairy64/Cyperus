@@ -54,28 +54,23 @@ namespace Cyperus
                 throw new TypeMismatchException(String.Format("Socket {0} doesn't accept data of type {1}", this, data.GetType()));
             }
             
-            await Owner.AcceptData(this, data);
+            if (Owner == null)
+                return;
+            else if (sender == Owner)
+                await SendData(data);
+            else
+                await Owner.AcceptData(this, data);
         }
 
-        public async Task SendData(IAcceptor acceptor, Object data)
+        protected async Task SendData(Object data)
         {
             if (!data.GetType().IsSubclassOf(DataType))
             {
                 throw new TypeMismatchException(String.Format("Socket {0} doesn't send data of type {1}", this, data.GetType()));
             }
-            
-            await acceptor.AcceptData(this, data);
-        }
 
-        public async Task SendData(Object data)
-        {
-            if (!data.GetType().IsSubclassOf(DataType))
-            {
-                throw new TypeMismatchException(String.Format("Socket {0} doesn't send data of type {1}", this, data.GetType()));
-            }
-            
-            var query = 
-                from acceptor in Clients select SendData(acceptor, data);
+            var query =
+                from acceptor in Clients select acceptor.AcceptData(this, data);
             
             await Task.WhenAll(query.ToArray<Task>());
         }

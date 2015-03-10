@@ -45,9 +45,12 @@
     <Compile Include="AbstractNode.cs" />
     <Compile Include="Exceptions.cs" />
     <Compile Include="HierarchyInterfaces.cs" />
+    <Compile Include="Output.cs" />
+    <Compile Include="Processor.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AbstractSocket.cs" />
     <Compile Include="Socket.cs" />
+    <Compile Include="Producer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
