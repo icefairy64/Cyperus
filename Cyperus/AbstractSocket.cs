@@ -32,7 +32,7 @@ namespace Cyperus
 
         public void AddClient(AbstractSocket client)
         {
-            if (!client.DataType.IsSubclassOf(DataType))
+            if (!client.DataType.IsSubclassOf(DataType) || (client.DataType != DataType))
             {
                 throw new TypeMismatchException(String.Format("Types of sockets {0} and {1} don't match", this, client));
             }
@@ -57,7 +57,7 @@ namespace Cyperus
 
         public async Task AcceptData(ISender sender, Object data)
         {
-            if (!data.GetType().IsSubclassOf(DataType))
+            if (!data.GetType().IsSubclassOf(DataType) || (data.GetType() != DataType))
             {
                 throw new TypeMismatchException(String.Format("Socket {0} doesn't accept data of type {1}", this, data.GetType()));
             }
@@ -72,7 +72,7 @@ namespace Cyperus
 
         protected async Task SendData(Object data)
         {
-            if (!data.GetType().IsSubclassOf(DataType))
+            if (!data.GetType().IsSubclassOf(DataType) || (data.GetType() != DataType))
             {
                 throw new TypeMismatchException(String.Format("Socket {0} doesn't send data of type {1}", this, data.GetType()));
             }
