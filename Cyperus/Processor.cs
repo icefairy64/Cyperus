@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace Cyperus
 {
+    [Serializable]
     public abstract class Processor : AbstractNode, ISender
     {
-        public Processor(string name)
-            : base(name)
+        public Processor(string name, Environment env)
+            : base(name, env)
         {
             
         }

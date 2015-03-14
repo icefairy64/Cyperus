@@ -10,6 +10,7 @@ namespace Cyperus
     /// <summary>
     /// Represents a socket that can send and accept untyped data
     /// </summary>
+    [Serializable]
     abstract public class AbstractSocket : IAcceptor, ISender
     {
         public Type DataType { get; protected set; }

@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace Cyperus
 {
+    [Serializable]
     public class Connection : IEquatable<Connection>
     {
-        public AbstractSocket Server;
-        public AbstractSocket Client;
+        public AbstractSocket Server { get; protected set; }
+        public AbstractSocket Client { get; protected set; }
 
         public Connection(AbstractSocket server, AbstractSocket client)
         {

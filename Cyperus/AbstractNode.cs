@@ -10,17 +10,20 @@ namespace Cyperus
     /// <summary>
     /// Represents a node that has several (or none) input and output sockets
     /// </summary>
+    [Serializable]
     abstract public class AbstractNode : IAcceptor
     {
         public ImmutableList<AbstractSocket> Inputs { get; protected set; }
         public ImmutableList<AbstractSocket> Outputs { get; protected set; }
         public string Name { get; set; }
+        public Environment Environment { get; protected set; }
 
-        protected AbstractNode(string name)
+        protected AbstractNode(string name, Environment env)
         {
             Name = name;
             Inputs = ImmutableList.Create<AbstractSocket>();
             Outputs = ImmutableList.Create<AbstractSocket>();
+            Environment = env;
         }
 
         protected void AddInput<T>(string name)

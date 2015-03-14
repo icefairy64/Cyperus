@@ -6,10 +6,11 @@ using System.Threading.Tasks;
 
 namespace Cyperus
 {
+    [Serializable]
     public abstract class Output : AbstractNode
     {
-        public Output(string name)
-            : base(name)
+        public Output(string name, Environment env)
+            : base(name, env)
         {
 
         }

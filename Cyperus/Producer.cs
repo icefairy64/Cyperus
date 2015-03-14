@@ -7,9 +7,12 @@ using System.Threading.Tasks;
 
 namespace Cyperus
 {
+    [Serializable]
     public abstract class Producer : AbstractNode, ISender
     {
+        [NonSerialized]
         protected Thread Thread;
+        [NonSerialized]
         protected bool FPaused = false;
 
         public bool Paused
@@ -26,8 +29,8 @@ namespace Cyperus
             }
         }
 
-        protected Producer(string name)
-            : base(name)
+        protected Producer(string name, Environment env)
+            : base(name, env)
         {
             Thread = new Thread(DoProduce);
         }
