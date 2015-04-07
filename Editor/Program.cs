@@ -34,7 +34,10 @@ namespace Cyperus.Designer
                 VisibleAssemblies.Add(e.LoadedAssembly);
             }
 
-            AssemblyLoaded(null, null);
+            if (AssemblyLoaded != null)
+            {
+                AssemblyLoaded(null, null);
+            }
         }
 
         public static void RebuildVisibleAssembliesList()

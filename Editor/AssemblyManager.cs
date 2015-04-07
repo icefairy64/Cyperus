@@ -56,9 +56,7 @@ namespace Cyperus.Designer
         private void AssembliesList_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (AssembliesList.SelectedIndex < 0)
-            {
                 return;
-            }
 
             TypesList.Items.Clear();
             TypesList.Items.AddRange(Program.TypesByAssembly[Program.VisibleAssemblies[AssembliesList.SelectedIndex]]);
