@@ -4,16 +4,16 @@ using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Cyperus;
 
 namespace Cyperus.Designer
 {
     [Serializable]
-    class NodeBox
+    class NodeBox : Control
     {
         protected Pen Outline;
         protected SolidBrush Fill;
-        protected RectangleF Rect;
         protected StringFormat TextFormat;
 
         public int SocketRadius = 4;
@@ -26,59 +26,18 @@ namespace Cyperus.Designer
             set { Fill.Color = value; }
         }
 
-        public float X
-        {
-            get { return Rect.X; }
-            set { Rect.X = value; }
-        }
-
-        public float Y
-        {
-            get { return Rect.Y; }
-            set { Rect.Y = value; }
-        }
-
-        public float Width
-        {
-            get { return Rect.Width; }
-            set 
-            { 
-                if (value < 100)
-                {
-                    return;
-                }
-
-                Rect.Width = value; 
-            }
-        }
-
-        public float Height
-        {
-            get { return Rect.Height; }
-            set 
-            {
-                if (value < 80)
-                {
-                    return;
-                }
-                
-                Rect.Height = value;
-            }
-        }
-
         public NodeBox(AbstractNode node, int x, int y)
         {
             Node = node;
             Fill = (SolidBrush)Brushes.Aquamarine;
             Outline = Pens.Black;
             TextFormat = new StringFormat() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
-            Rect = new RectangleF(x, y, 100, 80);
         }
 
         protected void DrawSockets(ICollection<AbstractSocket> set, Graphics canvas, int y)
         {
             int n = set.Count;
-            int d = (int)Width / (n > 0 ? n : 1);
+            int d = (int)ClientSize.Width / (n > 0 ? n : 1);
 
             for (int i = 0; i < n; i++)
             {
@@ -89,12 +48,19 @@ namespace Cyperus.Designer
         
         public void Draw(Graphics canvas)
         {
-            canvas.FillRectangle(Fill, Rect);
-            canvas.DrawRectangle(Outline, Rect.X, Rect.Y, Rect.Width, Rect.Height);
-            canvas.DrawString(Node.Name, SystemFonts.DefaultFont, Brushes.Black, Rect, TextFormat);
+            canvas.FillRectangle(Fill, ClientRectangle);
+            canvas.DrawRectangle(Outline, ClientRectangle);
+            canvas.DrawString(Node.Name, SystemFonts.DefaultFont, Brushes.Black, ClientRectangle, TextFormat);
 
-            DrawSockets(Node.Inputs, canvas, (int)Y);
-            DrawSockets(Node.Outputs, canvas, (int)(Y + Width));
+            DrawSockets(Node.Inputs, canvas, (int)ClientRectangle.Top);
+            DrawSockets(Node.Outputs, canvas, (int)ClientRectangle.Bottom);
+        }
+
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+
+            Draw(e.Graphics);
         }
     }
 }
