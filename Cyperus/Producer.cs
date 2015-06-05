@@ -4,15 +4,14 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Cyperus
 {
-    [Serializable]
+    [JsonObject(MemberSerialization.OptIn)]
     public abstract class Producer : AbstractNode, ISender
     {
-        [NonSerialized]
         protected Thread Thread;
-        [NonSerialized]
         protected bool FPaused = false;
 
         public bool Paused
@@ -51,6 +50,9 @@ namespace Cyperus
             Thread = null;
         }
 
+        /// <summary>
+        /// Produces data and sends it to clients. Requires to handle typical thread messages (interruption, abortion)
+        /// </summary>
         protected abstract void DoProduce();
 
         ~Producer()

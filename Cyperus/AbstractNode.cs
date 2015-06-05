@@ -1,48 +1,63 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Cyperus
 {
     /// <summary>
     /// Represents a node that has several (or none) input and output sockets
     /// </summary>
-    [Serializable]
+    [JsonObject(MemberSerialization.OptIn)]
     abstract public class AbstractNode : IAcceptor
     {
-        public ImmutableList<AbstractSocket> Inputs { get; protected set; }
-        public ImmutableList<AbstractSocket> Outputs { get; protected set; }
+        public IReadOnlyList<AbstractSocket> Inputs
+        {
+            get { return FInputs; }
+        }
+
+        public IReadOnlyList<AbstractSocket> Outputs 
+        {
+            get { return FOutputs; }
+        }
+
+        [JsonProperty]
         public string Name { get; set; }
+        [JsonProperty]
         public Environment Environment { get; protected set; }
+
+        [JsonProperty]
+        protected List<AbstractSocket> FInputs;
+        [JsonProperty]
+        protected List<AbstractSocket> FOutputs;
 
         protected AbstractNode(string name, Environment env)
         {
             Name = name;
-            Inputs = ImmutableList.Create<AbstractSocket>();
-            Outputs = ImmutableList.Create<AbstractSocket>();
+            FInputs = new List<AbstractSocket>();
+            FOutputs = new List<AbstractSocket>();
             Environment = env;
         }
 
         protected void AddInput<T>(string name)
         {
             var socket = new Socket<T>(this, name);
-            Inputs = Inputs.Add(socket);
+            FInputs.Add(socket);
         }
 
         protected void AddOutput<T>(string name)
         {
             var socket = new Socket<T>(null, name);
-            Outputs = Outputs.Add(socket);
+            FOutputs.Add(socket);
         }
 
         protected void RemoveInput(AbstractSocket socket)
         {
             if (Inputs.Contains(socket))
             {
-                Inputs = Inputs.Remove(socket);
+                FInputs.Remove(socket);
             }
         }
 
@@ -50,7 +65,7 @@ namespace Cyperus
         {
             if (Outputs.Contains(socket))
             {
-                Outputs = Outputs.Remove(socket);
+                FOutputs.Remove(socket);
             }
         }
 

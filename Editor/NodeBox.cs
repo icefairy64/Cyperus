@@ -34,7 +34,7 @@ namespace Cyperus.Designer
             TextFormat = new StringFormat() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
         }
 
-        protected void DrawSockets(ICollection<AbstractSocket> set, Graphics canvas, int y)
+        protected void DrawSockets(IReadOnlyCollection<AbstractSocket> set, Graphics canvas, int y)
         {
             int n = set.Count;
             int d = (int)ClientSize.Width / (n > 0 ? n : 1);

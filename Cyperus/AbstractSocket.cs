@@ -1,24 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace Cyperus
 {
     /// <summary>
     /// Represents a socket that can send and accept untyped data
     /// </summary>
-    [Serializable]
+    [JsonObject(MemberSerialization.OptIn)]
     abstract public class AbstractSocket : IAcceptor, ISender
     {
+        [JsonProperty]
         public Type DataType { get; protected set; }
+        [JsonProperty]
         public string Name { get; protected set; }
 
+        public IReadOnlyList<AbstractSocket> Clients
+        {
+            get { return FClients; }
+        }
+
+        [JsonProperty]
         protected IAcceptor Owner;
-        protected ImmutableList<AbstractSocket> Clients;
+        [JsonProperty]
         protected Dictionary<AbstractSocket, Connection> Connections;
+
+        [JsonProperty]
+        protected List<AbstractSocket> FClients;
 
         protected AbstractSocket(IAcceptor acceptor, string name, Type dataType)
         {
@@ -26,7 +37,7 @@ namespace Cyperus
             Name = name;
             DataType = dataType;
 
-            Clients = ImmutableList.Create<AbstractSocket>();
+            FClients = new List<AbstractSocket>();
             Connections = new Dictionary<AbstractSocket, Connection>();
         }
 
@@ -37,22 +48,22 @@ namespace Cyperus
                 throw new TypeMismatchException(String.Format("Types of sockets {0} and {1} don't match", this, client));
             }
 
-            if (Clients.Contains(client))
+            if (FClients.Contains(client))
             {
                 return;
             }
 
-            Clients = Clients.Add(client);
+            FClients.Add(client);
         }
 
         public void RemoveClient(AbstractSocket client)
         {
-            if (!Clients.Contains(client))
+            if (!FClients.Contains(client))
             {
                 return;
             }
             
-            Clients = Clients.Remove(client);
+            FClients.Remove(client);
         }
 
         public async Task AcceptData(ISender sender, Object data)
@@ -78,7 +89,7 @@ namespace Cyperus
             }
 
             var query =
-                from acceptor in Clients select acceptor.AcceptData(this, data);
+                from acceptor in FClients select acceptor.AcceptData(this, data);
             
             await Task.WhenAll(query.ToArray<Task>());
         }
@@ -96,7 +107,7 @@ namespace Cyperus
                 return socket.ConnectTo(this);
             }
 
-            if (Clients.Contains(socket))
+            if (FClients.Contains(socket))
             {
                 return Connections[socket];
             }
