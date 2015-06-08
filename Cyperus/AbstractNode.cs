@@ -45,6 +45,9 @@ namespace Cyperus
             FInputs = new List<AbstractSocket>();
             FOutputs = new List<AbstractSocket>();
             Environment = env;
+
+            if (env != null)
+                env.Nodes.Add(this);
         }
 
         protected Socket<T> AddInput<T>(string name)
@@ -91,19 +94,29 @@ namespace Cyperus
                 OnUpdate(this);
         }
 
-        public void Destroy()
+        /// <summary>
+        /// Destroys node and removes it from its environment
+        /// </summary>
+        public virtual void Destroy()
         {
             foreach (var socket in FInputs)
                 socket.Destroy();
 
             foreach (var socket in FOutputs)
                 socket.Destroy();
+
+            if (Environment != null)
+                Environment.Nodes.Remove(this);
         }
 
         public async virtual Task AcceptData(ISender sender, Object data)
         {
             if (OnSocketActivity != null)
-                await OnSocketActivity(this, sender);
+                OnSocketActivity(this, sender);
+
+            // Hack: to call OnSocketActivity in background we need to call something with await instead
+            // In this case, we're calling method that will return predefined result
+            await Task.FromResult(0);
         }
     }
 }

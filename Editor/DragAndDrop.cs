@@ -15,4 +15,14 @@ namespace Cyperus.Designer
             NodeType = nodeType;
         }
     }
+
+    internal struct ConnectionContainer
+    {
+        public readonly AbstractSocket Source;
+
+        public ConnectionContainer(AbstractSocket src)
+        {
+            Source = src;
+        }
+    }
 }

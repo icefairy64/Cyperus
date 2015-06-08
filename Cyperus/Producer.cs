@@ -28,10 +28,15 @@ namespace Cyperus
             }
         }
 
+        public bool Active
+        {
+            get { return ProcThread != null; }
+        }
+
         protected Producer(string name, Environment env)
             : base(name, env)
         {
-            ProcThread = new Thread(Produce);
+            //ProcThread = new Thread(Produce);
         }
 
         public void Start()
@@ -58,12 +63,17 @@ namespace Cyperus
         /// </summary>
         protected abstract void Produce();
 
-        ~Producer()
+        public override void Destroy()
         {
             if (ProcThread != null)
-            {
                 ProcThread.Abort();
-            }
+            
+            base.Destroy();
+        }
+
+        ~Producer()
+        {
+            
         }
     }
 }

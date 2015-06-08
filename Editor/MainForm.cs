@@ -63,15 +63,45 @@ namespace Cyperus.Designer
 
         private AbstractNode SpawnNode(Type nodeType)
         {
-            return (AbstractNode)Activator.CreateInstance(nodeType, "obj", NodeEnvironment);
+            var node = (AbstractNode)Activator.CreateInstance(nodeType, nodeType.Name, NodeEnvironment);
+            return node;
         }
 
         private void NodeContextMenu_Opening(object sender, CancelEventArgs e)
         {
-            if (!(NodeContextMenu.SourceControl is NodeBox))
+            var box = NodeContextMenu.SourceControl as NodeBox;
+            if (box == null)
                 return;
 
-            propertiesToolStripMenuItem.Enabled = GetNodePropertiesForm((NodeContextMenu.SourceControl as NodeBox).Node) != null;
+            propertiesToolStripMenuItem.Enabled = GetNodePropertiesForm(box.Node) != null;
+
+            if (box.Node is Producer)
+            {
+                toolStripSeparator1.Visible = true;
+                startToolStripMenuItem.Visible = true;
+                pauseToolStripMenuItem.Visible = true;
+                stopToolStripMenuItem.Visible = true;
+
+                var prod = box.Node as Producer;
+
+                if (prod.Paused)
+                    pauseToolStripMenuItem.Text = "Continue";
+                else
+                    pauseToolStripMenuItem.Text = "Pause";
+
+                if (prod.Active)
+                {
+                    startToolStripMenuItem.Enabled = false;
+                    pauseToolStripMenuItem.Enabled = true;
+                    stopToolStripMenuItem.Enabled = true;
+                }
+                else
+                {
+                    startToolStripMenuItem.Enabled = true;
+                    pauseToolStripMenuItem.Enabled = false;
+                    stopToolStripMenuItem.Enabled = false;
+                }
+            }
         }
 
         private Form GetNodePropertiesForm(AbstractNode node)
@@ -123,6 +153,41 @@ namespace Cyperus.Designer
 
             box.Node.Destroy();
             Controls.Remove(box);
+        }
+
+        private void startToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var box = NodeContextMenu.SourceControl as NodeBox;
+            if (box == null)
+                return;
+
+            var prod = box.Node as Producer;
+            prod.Start();
+        }
+
+        private void pauseToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var box = NodeContextMenu.SourceControl as NodeBox;
+            if (box == null)
+                return;
+
+            var prod = box.Node as Producer;
+            prod.Paused = !prod.Paused;
+        }
+
+        private void stopToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var box = NodeContextMenu.SourceControl as NodeBox;
+            if (box == null)
+                return;
+
+            var prod = box.Node as Producer;
+            prod.Stop();
+        }
+
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            NodeEnvironment.Destroy();
         }
     }
 }

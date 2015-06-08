@@ -85,5 +85,15 @@ namespace Cyperus
                 Serializer.Serialize(json, this);
             }
         }
+
+        /// <summary>
+        /// Destroys environment and all nodes in it
+        /// </summary>
+        public void Destroy()
+        {
+            List<AbstractNode> ToDestroy = new List<AbstractNode>(Nodes);
+            foreach (var node in ToDestroy)
+                node.Destroy();
+        }
     }
 }
