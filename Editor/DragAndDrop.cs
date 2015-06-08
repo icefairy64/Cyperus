@@ -18,9 +18,9 @@ namespace Cyperus.Designer
 
     internal struct ConnectionContainer
     {
-        public readonly AbstractSocket Source;
+        public readonly SocketWrapper Source;
 
-        public ConnectionContainer(AbstractSocket src)
+        public ConnectionContainer(SocketWrapper src)
         {
             Source = src;
         }

@@ -14,8 +14,8 @@ namespace Cyperus
     [JsonObject(MemberSerialization = MemberSerialization.OptIn, IsReference = true)]
     public class Socket<T> : AbstractSocket
     {
-        public Socket(IAcceptor acceptor, string name)
-            : base(acceptor, name, typeof(T))
+        public Socket(IAcceptor acceptor, string name, SocketKind kind)
+            : base(acceptor, name, typeof(T), kind)
         {
 
         }

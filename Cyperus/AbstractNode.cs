@@ -26,6 +26,11 @@ namespace Cyperus
             get { return FOutputs; }
         }
 
+        public bool Destroyed
+        {
+            get { return FDestroyed; }
+        }
+
         public NodeUpdateHandler OnUpdate;
         public SocketActivityHandler OnSocketActivity;
 
@@ -38,6 +43,8 @@ namespace Cyperus
         protected List<AbstractSocket> FInputs;
         [JsonProperty]
         protected List<AbstractSocket> FOutputs;
+
+        protected bool FDestroyed = false;
 
         protected AbstractNode(string name, Environment env)
         {
@@ -52,7 +59,7 @@ namespace Cyperus
 
         protected Socket<T> AddInput<T>(string name)
         {
-            var socket = new Socket<T>(this, name);
+            var socket = new Socket<T>(this, name, SocketKind.Destination);
             FInputs.Add(socket);
 
             if (OnUpdate != null)
@@ -63,7 +70,7 @@ namespace Cyperus
 
         protected Socket<T> AddOutput<T>(string name)
         {
-            var socket = new Socket<T>(null, name);
+            var socket = new Socket<T>(this, name, SocketKind.Source);
             FOutputs.Add(socket);
 
             if (OnUpdate != null)
@@ -107,6 +114,8 @@ namespace Cyperus
 
             if (Environment != null)
                 Environment.Nodes.Remove(this);
+
+            FDestroyed = true;
         }
 
         public async virtual Task AcceptData(ISender sender, Object data)
@@ -117,6 +126,11 @@ namespace Cyperus
             // Hack: to call OnSocketActivity in background we need to call something with await instead
             // In this case, we're calling method that will return predefined result
             await Task.FromResult(0);
+        }
+
+        public override string ToString()
+        {
+            return String.Format("{0} ({1})", Name, GetType().FullName);
         }
     }
 }

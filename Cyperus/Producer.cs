@@ -59,7 +59,7 @@ namespace Cyperus
         }
 
         /// <summary>
-        /// Produces data and sends it to clients. This method should handle typical thread messages (interruption, abortion)
+        /// Produces data and sends it to clients. This method should handle typical thread messages (interruption, abortion) and call OnSocketActivity for any socket that it will send data to.
         /// </summary>
         protected abstract void Produce();
 

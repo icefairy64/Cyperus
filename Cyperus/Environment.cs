@@ -10,6 +10,8 @@ using System.IO;
 
 namespace Cyperus
 {
+    public delegate void ConnectionHandler(Connection conn);
+    
     /// <summary>
     /// Represents an environment for node structures
     /// </summary>
@@ -27,6 +29,8 @@ namespace Cyperus
         public List<AbstractNode> Nodes { get; protected set; }
         [JsonProperty]
         public Dictionary<string, Object> Storage { get; protected set; }
+
+        public ConnectionHandler ConnectionHandler;
 
         [JsonProperty]
         protected List<Connection> FConnections;
@@ -61,6 +65,9 @@ namespace Cyperus
             
             var conn = socket1.ConnectTo(socket2);
             FConnections.Add(conn);
+
+            if (ConnectionHandler != null)
+                ConnectionHandler(conn);
         }
 
         public void Save(string filename)

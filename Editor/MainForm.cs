@@ -20,13 +20,21 @@ namespace Cyperus.Designer
         public MainForm()
         {
             InitializeComponent();
+            SetStyle(ControlStyles.SupportsTransparentBackColor, true);
 
             NodeEnvironment = new Environment();
         }
 
         private void MainForm_Paint(object sender, PaintEventArgs e)
         {
-            
+            e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+
+            foreach (var control in Controls)
+            {
+                var box = control as NodeBox;
+                if (box != null)
+                    box.DrawConnections(e.Graphics);
+            }
         }
 
         private void ManageAssemblies_Click(object sender, EventArgs e)
@@ -153,6 +161,15 @@ namespace Cyperus.Designer
 
             box.Node.Destroy();
             Controls.Remove(box);
+
+            foreach (var obj in Controls)
+            {
+                var ob = obj as NodeBox;
+                if (ob != null)
+                    ob.Validate();
+            }
+
+            Refresh();
         }
 
         private void startToolStripMenuItem_Click(object sender, EventArgs e)

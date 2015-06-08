@@ -21,11 +21,11 @@ namespace Cyperus
             if (OnSocketActivity != null)
                 OnSocketActivity(this, sender);
             
-            Object result = await ProcessData(data);
+            Object result = await ProcessData(sender, data);
             await DispatchData(sender, result);
         }
 
-        protected abstract Task<Object> ProcessData(Object data);
+        protected abstract Task<Object> ProcessData(ISender sender, Object data);
 
         /// <summary>
         /// Dispatches data generated on data received from sender. This method should call OnSocketActivity for any socket that it will send data to.

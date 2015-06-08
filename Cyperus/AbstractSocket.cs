@@ -7,6 +7,12 @@ using Newtonsoft.Json;
 
 namespace Cyperus
 {
+    public enum SocketKind
+    {
+        Source,
+        Destination
+    }
+    
     /// <summary>
     /// Represents a socket that can send and accept untyped data
     /// </summary>
@@ -17,6 +23,8 @@ namespace Cyperus
         public Type DataType { get; protected set; }
         [JsonProperty]
         public string Name { get; protected set; }
+        [JsonProperty]
+        public readonly SocketKind Kind;
 
         public IReadOnlyList<AbstractSocket> Clients
         {
@@ -31,11 +39,12 @@ namespace Cyperus
         [JsonProperty]
         protected List<AbstractSocket> FClients;
 
-        protected AbstractSocket(IAcceptor acceptor, string name, Type dataType)
+        protected AbstractSocket(IAcceptor acceptor, string name, Type dataType, SocketKind kind)
         {
             Owner = acceptor;
             Name = name;
             DataType = dataType;
+            Kind = kind;
 
             FClients = new List<AbstractSocket>();
             Connections = new Dictionary<AbstractSocket, Connection>();
@@ -43,7 +52,7 @@ namespace Cyperus
 
         public void AddClient(AbstractSocket client)
         {
-            if (!client.DataType.IsSubclassOf(DataType) || (client.DataType != DataType))
+            if (!AcceptsDataType(client.DataType))
             {
                 throw new TypeMismatchException(String.Format("Types of sockets {0} and {1} don't match", this, client));
             }
@@ -66,9 +75,14 @@ namespace Cyperus
             FClients.Remove(client);
         }
 
+        public bool AcceptsDataType(Type type)
+        {
+            return type.IsSubclassOf(DataType) || type == DataType;
+        }
+
         public async Task AcceptData(ISender sender, Object data)
         {
-            if (!data.GetType().IsSubclassOf(DataType) || (data.GetType() != DataType))
+            if (!AcceptsDataType(data.GetType()))
             {
                 throw new TypeMismatchException(String.Format("Socket {0} doesn't accept data of type {1}", this, data.GetType()));
             }
@@ -83,7 +97,7 @@ namespace Cyperus
 
         protected async Task SendData(Object data)
         {
-            if (!data.GetType().IsSubclassOf(DataType) || (data.GetType() != DataType))
+            if (!AcceptsDataType(data.GetType()))
             {
                 throw new TypeMismatchException(String.Format("Socket {0} doesn't send data of type {1}", this, data.GetType()));
             }
@@ -101,7 +115,7 @@ namespace Cyperus
                 return null;
             }
             
-            if (Owner == null)
+            if (Kind == SocketKind.Destination)
             {
                 // This is client socket; we should add it to another socket's client list
                 return socket.ConnectTo(this);
