@@ -44,6 +44,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractNode.cs" />
+    <Compile Include="Attributes.cs" />
     <Compile Include="Connection.cs" />
     <Compile Include="Environment.cs" />
     <Compile Include="Exceptions.cs" />

@@ -8,10 +8,10 @@ using Newtonsoft.Json;
 
 namespace Cyperus
 {
-    [JsonObject(MemberSerialization.OptIn)]
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn, IsReference = true)]
     public abstract class Producer : AbstractNode, ISender
     {
-        protected Thread Thread;
+        protected Thread ProcThread;
         protected bool FPaused = false;
 
         public bool Paused
@@ -21,7 +21,7 @@ namespace Cyperus
             {
                 if (!value && FPaused)
                 {
-                    Thread.Interrupt();
+                    ProcThread.Interrupt();
                 }
 
                 FPaused = value;
@@ -31,33 +31,39 @@ namespace Cyperus
         protected Producer(string name, Environment env)
             : base(name, env)
         {
-            Thread = new Thread(DoProduce);
+            ProcThread = new Thread(Produce);
         }
 
         public void Start()
         {
-            if (Thread == null)
+            if (ProcThread == null)
             {
-                Thread = new Thread(DoProduce);
+                ProcThread = new Thread(Produce);
             }
 
-            Thread.Start();
+            ProcThread.Start();
         }
 
         public void Stop()
         {
-            Thread.Abort();
-            Thread = null;
+            if (ProcThread != null)
+            {
+                ProcThread.Abort();
+                ProcThread = null;
+            }
         }
 
         /// <summary>
-        /// Produces data and sends it to clients. Requires to handle typical thread messages (interruption, abortion)
+        /// Produces data and sends it to clients. This method should handle typical thread messages (interruption, abortion)
         /// </summary>
-        protected abstract void DoProduce();
+        protected abstract void Produce();
 
         ~Producer()
         {
-            Thread.Abort();
+            if (ProcThread != null)
+            {
+                ProcThread.Abort();
+            }
         }
     }
 }

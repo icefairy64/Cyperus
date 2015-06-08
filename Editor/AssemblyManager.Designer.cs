@@ -110,6 +110,7 @@
             this.TypesList.Name = "TypesList";
             this.TypesList.Size = new System.Drawing.Size(212, 264);
             this.TypesList.TabIndex = 0;
+            this.TypesList.MouseDown += new System.Windows.Forms.MouseEventHandler(this.TypesList_MouseDown);
             // 
             // LoadAssemblyDialog
             // 

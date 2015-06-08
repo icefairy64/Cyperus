@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Cyperus
 {
-    [JsonObject(MemberSerialization.OptIn)]
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn, IsReference = true)]
     public abstract class Output : AbstractNode
     {
         public Output(string name, Environment env)

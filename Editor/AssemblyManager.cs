@@ -84,5 +84,13 @@ namespace Cyperus.Designer
         {
             Program.AssemblyLoaded -= AssemblyLoadedHandler;
         }
+
+        private void TypesList_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (TypesList.SelectedIndex < 0)
+                return;
+
+            DoDragDrop(new NodeCreationContainer((Type)Program.TypesByAssembly[Program.VisibleAssemblies[AssembliesList.SelectedIndex]][TypesList.SelectedIndex]), DragDropEffects.Move);
+        }
     }
 }

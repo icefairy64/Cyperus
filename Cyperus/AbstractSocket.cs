@@ -10,7 +10,7 @@ namespace Cyperus
     /// <summary>
     /// Represents a socket that can send and accept untyped data
     /// </summary>
-    [JsonObject(MemberSerialization.OptIn)]
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn, IsReference = true)]
     abstract public class AbstractSocket : IAcceptor, ISender
     {
         [JsonProperty]

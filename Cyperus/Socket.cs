@@ -11,7 +11,7 @@ namespace Cyperus
     /// Represents a socket that can send and accept typed data
     /// </summary>
     /// <typeparam name="T">Type of data that socket is able to work with</typeparam>
-    [JsonObject(MemberSerialization.OptIn)]
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn, IsReference = true)]
     public class Socket<T> : AbstractSocket
     {
         public Socket(IAcceptor acceptor, string name)

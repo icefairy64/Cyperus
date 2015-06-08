@@ -7,10 +7,13 @@ using Newtonsoft.Json;
 
 namespace Cyperus
 {
+    public delegate void NodeUpdateHandler(AbstractNode sender);
+    public delegate Task SocketActivityHandler(AbstractNode sender, object socket);
+    
     /// <summary>
     /// Represents a node that has several (or none) input and output sockets
     /// </summary>
-    [JsonObject(MemberSerialization.OptIn)]
+    [JsonObject(MemberSerialization = MemberSerialization.OptIn, IsReference = true)]
     abstract public class AbstractNode : IAcceptor
     {
         public IReadOnlyList<AbstractSocket> Inputs
@@ -22,6 +25,9 @@ namespace Cyperus
         {
             get { return FOutputs; }
         }
+
+        public NodeUpdateHandler OnUpdate;
+        public SocketActivityHandler OnSocketActivity;
 
         [JsonProperty]
         public string Name { get; set; }
@@ -41,16 +47,26 @@ namespace Cyperus
             Environment = env;
         }
 
-        protected void AddInput<T>(string name)
+        protected Socket<T> AddInput<T>(string name)
         {
             var socket = new Socket<T>(this, name);
             FInputs.Add(socket);
+
+            if (OnUpdate != null)
+                OnUpdate(this);
+
+            return socket;
         }
 
-        protected void AddOutput<T>(string name)
+        protected Socket<T> AddOutput<T>(string name)
         {
             var socket = new Socket<T>(null, name);
             FOutputs.Add(socket);
+
+            if (OnUpdate != null)
+                OnUpdate(this);
+
+            return socket;
         }
 
         protected void RemoveInput(AbstractSocket socket)
@@ -59,6 +75,9 @@ namespace Cyperus
             {
                 FInputs.Remove(socket);
             }
+
+            if (OnUpdate != null)
+                OnUpdate(this);
         }
 
         protected void RemoveOutput(AbstractSocket socket)
@@ -67,8 +86,24 @@ namespace Cyperus
             {
                 FOutputs.Remove(socket);
             }
+
+            if (OnUpdate != null)
+                OnUpdate(this);
         }
 
-        public abstract Task AcceptData(ISender sender, Object data);
+        public void Destroy()
+        {
+            foreach (var socket in FInputs)
+                socket.Destroy();
+
+            foreach (var socket in FOutputs)
+                socket.Destroy();
+        }
+
+        public async virtual Task AcceptData(ISender sender, Object data)
+        {
+            if (OnSocketActivity != null)
+                await OnSocketActivity(this, sender);
+        }
     }
 }
