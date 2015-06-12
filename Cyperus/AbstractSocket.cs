@@ -52,7 +52,7 @@ namespace Cyperus
 
         public void AddClient(AbstractSocket client)
         {
-            if (!AcceptsDataType(client.DataType))
+            if (!client.AcceptsDataType(DataType))
             {
                 throw new TypeMismatchException(String.Format("Types of sockets {0} and {1} don't match", this, client));
             }

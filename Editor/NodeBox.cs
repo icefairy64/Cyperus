@@ -10,34 +10,6 @@ using Cyperus;
 
 namespace Cyperus.Designer
 {
-    public class SocketWrapper
-    {
-        public readonly NodeBox Owner;
-        public readonly object Socket;
-        public bool Flash;
-        public Point Location;
-
-        public SocketWrapper(NodeBox owner, object socket, int x, int y)
-        {
-            Socket = socket;
-            Flash = false;
-            Location = new Point(x, y);
-            Owner = owner;
-        }
-    }
-
-    public class ConnectionWrapper
-    {
-        public readonly SocketWrapper Source;
-        public readonly SocketWrapper Destination;
-        
-        public ConnectionWrapper(SocketWrapper src, SocketWrapper dest)
-        {
-            Source = src;
-            Destination = dest;
-        }
-    }
-    
     [Serializable]
     public class NodeBox : Control
     {
@@ -118,9 +90,7 @@ namespace Cyperus.Designer
         public void DrawConnections(Graphics canvas)
         {
             foreach (var conn in Connections)
-            {
                 canvas.DrawLine(Outline, conn.Source.Location + new Size(Location), conn.Destination.Location + new Size(conn.Destination.Owner.Location));
-            }
         }
 
         protected void NodeUpdateHandler(AbstractNode sender)
@@ -142,6 +112,12 @@ namespace Cyperus.Designer
             }
         }
 
+        /// <summary>
+        /// Flashes socket on activity
+        /// </summary>
+        /// <param name="sender">Node that socket belongs to</param>
+        /// <param name="socket">Socket that was active</param>
+        /// <returns></returns>
         protected async Task SocketActivityHandler(AbstractNode sender, object socket)
         {
             var target = Sockets.Find(obj => obj.Socket == socket);
@@ -165,6 +141,11 @@ namespace Cyperus.Designer
             return (int)(Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y)));
         }
 
+        /// <summary>
+        /// Gets socket within [SockerRadius * 2] distance from given point
+        /// </summary>
+        /// <param name="location">Point</param>
+        /// <returns></returns>
         private SocketWrapper GetSocketAtPoint(Point location)
         {
             return Sockets.Find(obj => GetDistance(obj.Location, location) <= SocketRadius * 2);
@@ -174,12 +155,22 @@ namespace Cyperus.Designer
         {
             base.OnMouseDown(e);
 
-            // Connecting
+            // Managing connections
             var socket = GetSocketAtPoint(e.Location);
             if (socket != null)
             {
-                DoDragDrop(new ConnectionContainer(socket), DragDropEffects.Link);
-                return;
+                if (socket.Connections.Count == 0 || e.Button == System.Windows.Forms.MouseButtons.Left)
+                {
+                    DoDragDrop(new ConnectionContainer(socket), DragDropEffects.Link);
+                    return;
+                }
+
+                // Removing connection
+                var conn = socket.PopConnection();
+                conn.Connection.Destroy();
+                conn.Source.Owner.RemoveConnection(conn);
+                conn.Destination.RemoveConnection(conn);
+                Parent.Refresh();
             }
 
             // Dragging
@@ -231,6 +222,7 @@ namespace Cyperus.Designer
             var cont = (ConnectionContainer)drgevent.Data.GetData(typeof(ConnectionContainer));
             var socket = GetSocketAtPoint(PointToClient(new Point(drgevent.X, drgevent.Y)));
 
+            // Discarding drop if criteria haven't met
             if (socket != null && socket.Socket != cont.Source && ((AbstractSocket)socket.Socket).AcceptsDataType(((AbstractSocket)cont.Source.Socket).DataType)
                     && ((AbstractSocket)cont.Source.Socket).Kind != ((AbstractSocket)socket.Socket).Kind)
                 drgevent.Effect = DragDropEffects.Link;
@@ -251,14 +243,29 @@ namespace Cyperus.Designer
             var src = ((AbstractSocket)cont.Source.Socket).Kind == SocketKind.Source ? cont.Source : socket;
             var dest = src == socket ? cont.Source : socket;
 
-            Node.Environment.Connect((AbstractSocket)src.Socket, (AbstractSocket)dest.Socket);
-            src.Owner.AddConnection(new ConnectionWrapper(src, dest));
+            // Accepting drop
+            var ic = Node.Environment.Connect((AbstractSocket)src.Socket, (AbstractSocket)dest.Socket);
+            // Returning if connection already exists
+            if (ic == null)
+                return;
+
+            var conn = new ConnectionWrapper(src, dest, ic);
+            src.Owner.AddConnection(conn);
+            dest.AddConnection(conn);
             Parent.Refresh();
         }
 
         public void AddConnection(ConnectionWrapper conn)
         {
+            if (Connections.Contains(conn))
+                return;
+
             Connections.Add(conn);
+        }
+
+        public void RemoveConnection(ConnectionWrapper conn)
+        {
+            Connections.Remove(conn);
         }
 
         /// <summary>

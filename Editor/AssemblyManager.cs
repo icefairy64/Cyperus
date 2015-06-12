@@ -14,6 +14,8 @@ namespace Cyperus.Designer
 {
     public partial class AssemblyManager : Form
     {
+        protected MainForm Main;
+        
         string GetAssemblyTitle(Assembly assembly)
         {
             string name = assembly.FullName.Substring(0, assembly.FullName.IndexOf(','));
@@ -38,10 +40,11 @@ namespace Cyperus.Designer
             RebuildAssebmbliesList();
         }
 
-        public AssemblyManager()
+        public AssemblyManager(MainForm main)
         {
             InitializeComponent();
             RebuildAssebmbliesList();
+            Main = main;
 
             Program.AssemblyLoaded += AssemblyLoadedHandler;
             ShowEmptyCheckbox.Checked = Program.ShowEmptyAssemblies;

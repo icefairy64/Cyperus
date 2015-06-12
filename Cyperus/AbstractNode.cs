@@ -128,6 +128,14 @@ namespace Cyperus
             await Task.FromResult(0);
         }
 
+        public async Task SendToSocket(IAcceptor socket, object data)
+        {
+            if (OnSocketActivity != null)
+                OnSocketActivity(this, socket);
+
+            await socket.AcceptData((ISender)this, data);
+        }
+
         public override string ToString()
         {
             return String.Format("{0} ({1})", Name, GetType().FullName);

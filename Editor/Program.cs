@@ -17,7 +17,7 @@ namespace Cyperus.Designer
         public static List<Type> Types;
         public static bool ShowEmptyAssemblies = false;
 
-        public static AssemblyLoadedHandler AssemblyLoaded;
+        public static event AssemblyLoadedHandler AssemblyLoaded;
 
         private static void AssemblyLoadHandler(object sender, AssemblyLoadEventArgs e)
         {
@@ -28,6 +28,7 @@ namespace Cyperus.Designer
 
             Assemblies.Add(e.LoadedAssembly);
             TypesByAssembly.Add(e.LoadedAssembly, typeQuery.ToArray());
+            Types.AddRange(typeQuery.ToArray());
 
             if ((typeQuery.Count() > 0) || ShowEmptyAssemblies)
             {

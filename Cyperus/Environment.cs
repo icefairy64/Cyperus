@@ -55,19 +55,21 @@ namespace Cyperus
             }
         }
 
-        public void Connect(AbstractSocket socket1, AbstractSocket socket2)
+        public Connection Connect(AbstractSocket socket1, AbstractSocket socket2)
         {
             if (socket1 == socket2)
-                return;
+                return null;
             
             if (FConnections.FindIndex(c => ((c.Client == socket1) || (c.Client == socket2)) && ((c.Server == socket1) || (c.Server == socket2))) >= 0)
-                return;
+                return null;
             
             var conn = socket1.ConnectTo(socket2);
             FConnections.Add(conn);
 
             if (ConnectionHandler != null)
                 ConnectionHandler(conn);
+
+            return conn;
         }
 
         public void Save(string filename)

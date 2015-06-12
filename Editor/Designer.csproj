@@ -88,6 +88,12 @@
     <Compile Include="RenameForm.Designer.cs">
       <DependentUpon>RenameForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="TypeListForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TypeListForm.Designer.cs">
+      <DependentUpon>TypeListForm.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="AssemblyManager.resx">
       <DependentUpon>AssemblyManager.cs</DependentUpon>
     </EmbeddedResource>
@@ -106,6 +112,9 @@
     </Compile>
     <EmbeddedResource Include="RenameForm.resx">
       <DependentUpon>RenameForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TypeListForm.resx">
+      <DependentUpon>TypeListForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
