@@ -24,6 +24,9 @@ namespace Virtual16
             OpCode = opcode;
         }
 
+        /// <summary>
+        /// Instruction set
+        /// </summary>
         public static Instruction[] Set 
         {
             get { return FSet; }
@@ -58,6 +61,7 @@ namespace Virtual16
             tmp[0x2B] = new Instruction("ld", 0x2B, new InstructionSignature(InstructionArgument.A, InstructionArgument.R16R), LoadAFromReg16R);
             tmp[0x2C] = new Instruction("ld", 0x2C, new InstructionSignature(InstructionArgument.D16R, InstructionArgument.R8), LoadFromReg8);
             tmp[0x2D] = new Instruction("ld", 0x2D, new InstructionSignature(InstructionArgument.HLR, InstructionArgument.R8), LoadHLRFromReg8);
+            tmp[0x2E] = new Instruction("ld", 0x2E, new InstructionSignature(InstructionArgument.HLR, InstructionArgument.D8), LoadHLR);
 
             tmp[0x40] = new Instruction("add", 0x40, new InstructionSignature(InstructionArgument.D8), Add);
             tmp[0x41] = new Instruction("add", 0x41, new InstructionSignature(InstructionArgument.R8), AddReg);
@@ -75,10 +79,27 @@ namespace Virtual16
             tmp[0x4D] = new Instruction("sbc", 0x4D, new InstructionSignature(InstructionArgument.R8), SubCReg);
             tmp[0x4E] = new Instruction("sbc", 0x4E, new InstructionSignature(InstructionArgument.HLR), SubCHLR);
 
+            tmp[0x50] = new Instruction("cmp", 0x50, new InstructionSignature(InstructionArgument.D8), Cmp);
+            tmp[0x51] = new Instruction("cmp", 0x51, new InstructionSignature(InstructionArgument.R8), CmpReg);
+            tmp[0x52] = new Instruction("cmp", 0x52, new InstructionSignature(InstructionArgument.HLR), CmpHLR);
+
+            tmp[0x54] = new Instruction("inc", 0x54, new InstructionSignature(InstructionArgument.A), Inc);
+            tmp[0x55] = new Instruction("inc", 0x55, new InstructionSignature(InstructionArgument.R8), IncReg8);
+            tmp[0x56] = new Instruction("inc", 0x56, new InstructionSignature(InstructionArgument.R16), IncReg16);
+            tmp[0x57] = new Instruction("inc", 0x57, new InstructionSignature(InstructionArgument.HLR), IncHLR);
+
+            tmp[0x58] = new Instruction("dec", 0x58, new InstructionSignature(InstructionArgument.A), Dec);
+            tmp[0x59] = new Instruction("dec", 0x59, new InstructionSignature(InstructionArgument.R8), DecReg8);
+            tmp[0x5A] = new Instruction("dec", 0x5A, new InstructionSignature(InstructionArgument.R16), DecReg16);
+            tmp[0x5B] = new Instruction("dec", 0x5B, new InstructionSignature(InstructionArgument.HLR), DecHLR);
+
             return tmp;
         }
     }
 
+    /// <summary>
+    /// Represents set of instruction arguments which define an unique instruction signature
+    /// </summary>
     public struct InstructionSignature
     {
         public readonly byte ArgSize;
@@ -101,13 +122,11 @@ namespace Virtual16
                     case InstructionArgumentKind.Constant16:
                         ArgSize += 2;
                         break;
-                    case InstructionArgumentKind.Register16:
-                        ArgSize += 2;
-                        break;
                     case InstructionArgumentKind.Constant8:
                         ArgSize += 1;
                         break;
                     case InstructionArgumentKind.Register8:
+                    case InstructionArgumentKind.Register16:
                         ArgSize += 1;
                         break;
                     default:
@@ -167,6 +186,9 @@ namespace Virtual16
         public static readonly InstructionSignature Empty = new InstructionSignature(new InstructionArgument[0]);
     }
 
+    /// <summary>
+    /// Represents a signature of instruction argument
+    /// </summary>
     public struct InstructionArgument
     {
         public readonly InstructionArgumentKind Kind;

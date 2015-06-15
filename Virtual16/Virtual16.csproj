@@ -60,6 +60,13 @@
     <Compile Include="Nodes\Forms\CommandListenerForm.Designer.cs">
       <DependentUpon>CommandListenerForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Nodes\Forms\CPUMonitorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Nodes\Forms\CPUMonitorForm.Designer.cs">
+      <DependentUpon>CPUMonitorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Nodes\TelnetOutput.cs" />
     <Compile Include="Nodes\TelnetServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
@@ -85,6 +92,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Nodes\Forms\CommandListenerForm.resx">
       <DependentUpon>CommandListenerForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Nodes\Forms\CPUMonitorForm.resx">
+      <DependentUpon>CPUMonitorForm.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -198,7 +198,13 @@ namespace Virtual16
             byte data = cpu.GetRegister8((RegisterDestination8)src);
             Memory.StoreByte(cpu.Memory, cpu.HL, data);
         }
-        
+
+        static void LoadHLR(V16CPU cpu)
+        {
+            byte data = Memory.LoadByte(cpu.Memory, (ushort)(cpu.IP + 1));
+            Memory.StoreByte(cpu.Memory, cpu.HL, data);
+        }
+
         #endregion
 
         #region Addition
@@ -337,6 +343,88 @@ namespace Virtual16
             cpu.Carry = tmp > 0xFF;
             cpu.Zero = tmp == 0;
             cpu.Sub = true;
+        }
+
+        #endregion
+
+        #region Comparison
+
+        static void Cmp(V16CPU cpu)
+        {
+            byte data = Memory.LoadByte(cpu.Memory, (ushort)(cpu.IP + 1));
+            ushort tmp = (ushort)(cpu.A - data);
+            cpu.Carry = tmp > 0xFF;
+            cpu.Zero = tmp == 0;
+            cpu.Sub = true;
+        }
+
+        static void CmpReg(V16CPU cpu)
+        {
+            byte src = Memory.LoadByte(cpu.Memory, (ushort)(cpu.IP + 1));
+            byte data = cpu.GetRegister8((RegisterDestination8)src);
+            ushort tmp = (ushort)(cpu.A - data);
+            cpu.Carry = tmp > 0xFF;
+            cpu.Zero = tmp == 0;
+            cpu.Sub = true;
+        }
+
+        static void CmpHLR(V16CPU cpu)
+        {
+            byte data = Memory.LoadByte(cpu.Memory, cpu.HL);
+            ushort tmp = (ushort)(cpu.A - data);
+            cpu.Carry = tmp > 0xFF;
+            cpu.Zero = tmp == 0;
+            cpu.Sub = true;
+        }
+
+        #endregion
+
+        #region Increments / decrements
+
+        static void Inc(V16CPU cpu)
+        {
+            cpu.A++;
+        }
+
+        static void IncReg8(V16CPU cpu)
+        {
+            var dest = (RegisterDestination8)Memory.LoadByte(cpu.Memory, (ushort)(cpu.IP + 1));
+            cpu.SetRegister8(dest, (byte)(cpu.GetRegister8(dest) + 1));
+        }
+
+        static void IncReg16(V16CPU cpu)
+        {
+            var dest = (RegisterDestination16)Memory.LoadByte(cpu.Memory, (ushort)(cpu.IP + 1));
+            cpu.SetRegister16(dest, (ushort)(cpu.GetRegister16(dest) + 1));
+        }
+
+        static void IncHLR(V16CPU cpu)
+        {
+            byte data = Memory.LoadByte(cpu.Memory, cpu.HL);
+            Memory.StoreByte(cpu.Memory, cpu.HL, (byte)(data + 1));
+        }
+
+        static void Dec(V16CPU cpu)
+        {
+            cpu.A--;
+        }
+
+        static void DecReg8(V16CPU cpu)
+        {
+            var dest = (RegisterDestination8)Memory.LoadByte(cpu.Memory, (ushort)(cpu.IP + 1));
+            cpu.SetRegister8(dest, (byte)(cpu.GetRegister8(dest) - 1));
+        }
+
+        static void DecReg16(V16CPU cpu)
+        {
+            var dest = (RegisterDestination16)Memory.LoadByte(cpu.Memory, (ushort)(cpu.IP + 1));
+            cpu.SetRegister16(dest, (ushort)(cpu.GetRegister16(dest) - 1));
+        }
+
+        static void DecHLR(V16CPU cpu)
+        {
+            byte data = Memory.LoadByte(cpu.Memory, cpu.HL);
+            Memory.StoreByte(cpu.Memory, cpu.HL, (byte)(data - 1));
         }
 
         #endregion

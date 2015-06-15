@@ -39,17 +39,46 @@ namespace Virtual16.Nodes
             if (cmd == null)
                 return null;
 
-            int d = cmd.Value.IndexOf(" ");
-            var str = d < 0 ? cmd.Value : cmd.Value.Substring(0, cmd.Value.IndexOf(" "));
+            int d = cmd.Value.IndexOf(' ');
+            var str = d < 0 ? cmd.Value : cmd.Value.Substring(0, d);
+            var args = d < 0 ? "" : cmd.Value.Substring(d + 1);
             try
             {
                 if (str == "st")
                 {
-                    throw new NotImplementedException();
+                    // Storing data block into memory
+                    var addrOffset = args.IndexOf(' ');
+                    if (addrOffset < 0)
+                        throw new Exception("Memory store address is undefined");
+                    var addr = FSMParser.ParseNumber(args.Substring(0, addrOffset), 16);
+                    args = args.Substring(addrOffset + 1).ToLower();
+                    var buf = "";
+                    int i = 0;
+                    var list = new List<byte>();
+                    foreach (char c in args)
+                    {
+                        if (c == ' ')
+                            continue;
+                        if ((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'))
+                        {
+                            buf += c;
+                            i++;
+                            if (i % 2 == 0)
+                            {
+                                list.Add((byte)FSMParser.ParseNumber(buf, 16));
+                                buf = "";
+                            }
+                        }
+                    }
+                    var msg = String.Format("Stored {0} bytes\r\n", (i + 1) / 2);
+                    cmd.Stream.Write(TelnetServer.StringToByteArray(msg), 0, msg.Length);
+
+                    return new MemoryStoreOperation(addr, list.ToArray());
                 }
                 else
                 {
-                    var res = await Task.Run(() => FSMParser.Parse(d < 0 ? "" : cmd.Value.Substring(cmd.Value.IndexOf(" ") + 1).ToLower(), str));
+                    // Executing instruction
+                    var res = await Task.Run(() => FSMParser.Parse(args.ToLower(), str));
                     var query =
                         from x in res
                         select String.Format("{0:X2} ", x);
@@ -70,10 +99,16 @@ namespace Virtual16.Nodes
 
         protected override async Task DispatchData(ISender sender, object data)
         {
-            var cmd = data as byte[];
-            if (cmd != null)
+            if (data is byte[])
             {
+                var cmd = data as byte[];
                 await SendToSocket(CmdOut, data);
+                return;
+            }
+            else if (data is MemoryStoreOperation)
+            {
+                var cmd = data as MemoryStoreOperation;
+                await SendToSocket(StoreOut, data);
                 return;
             }
         }
@@ -117,6 +152,9 @@ namespace Virtual16.Nodes
 
     #endregion
 
+    /// <summary>
+    /// Represents FSM designed to parse assembly language instructions
+    /// </summary>
     class FSMParser
     {
         FSMState State;
@@ -137,13 +175,15 @@ namespace Virtual16.Nodes
             { -1, -1, -1, -1, -1, -1,  0 }  // )
         };
 
-        static FSMState[] FinalStates = new FSMState[] { FSMState.Start, FSMState.Digit, FSMState.Char, FSMState.HexDigit, FSMState.RefChar, FSMState.RefDigit, FSMState.RefHexDigit };
+        static FSMState[] FinalStates = new FSMState[] { FSMState.Start, FSMState.Digit, FSMState.Char, FSMState.HexDigit, FSMState.RefChar, FSMState.RefDigit, FSMState.RefHexDigit, FSMState.ClosingBracket };
 
+        /// <summary>
+        /// Processes given character
+        /// </summary>
+        /// <param name="c">Character</param>
         public void Input(char c)
         {
             FSMInput input = FSMInput.Unknown;
-            if (c == 0x20)
-                return;
             if (c >= 'a' && c <= 'f')
             {
                 input = FSMInput.HexChar;
@@ -178,6 +218,12 @@ namespace Virtual16.Nodes
             State = (FSMState)nextState;
         }
 
+        /// <summary>
+        /// Converts given string to managed register destination or instruction argument kind type
+        /// </summary>
+        /// <param name="reg">Register name</param>
+        /// <returns>RegisterDestination8, RegisterDestination16 or InstructionArgumentKind</returns>
+        /// <exception cref="Exception"></exception>
         static object GuessRegister(string reg)
         {
             switch (reg)
@@ -209,7 +255,13 @@ namespace Virtual16.Nodes
             }
         }
 
-        static ushort ParseNumber(string str, int bs)
+        /// <summary>
+        /// Parses string representation of number in given base
+        /// </summary>
+        /// <param name="str">String representation of number</param>
+        /// <param name="bs">Base</param>
+        /// <returns></returns>
+        public static ushort ParseNumber(string str, int bs)
         {
             ushort tmp = 0;
             int i = 1;
@@ -231,7 +283,7 @@ namespace Virtual16.Nodes
         /// <summary>
         /// Adds an argument to parser's context argument list
         /// </summary>
-        /// <param name="parser"></param>
+        /// <param name="parser">Parser</param>
         private static void AddArgument(FSMParser parser, FSMState prevState)
         {
             var buf = parser.Context.Buffer;
@@ -300,7 +352,7 @@ namespace Virtual16.Nodes
         }
 
         /// <summary>
-        /// Returns set of signatures of instruction that can accept given context's arguments
+        /// Returns set of instructions that can accept given context's arguments
         /// </summary>
         /// <param name="context">Parser context</param>
         /// <param name="mnemonic">Instruction mnemonic</param>
@@ -318,6 +370,7 @@ namespace Virtual16.Nodes
 
             foreach (var s in signList)
             {
+                // Make sure that most fitting instruction goes first
                 if (s.Signature.Equals(sign))
                 {
                     list.Insert(0, s);
@@ -333,8 +386,9 @@ namespace Virtual16.Nodes
         /// <summary>
         /// Generates runnable code based on arguments and its values of given parser context
         /// </summary>
-        /// <param name="parser"></param>
-        /// <returns></returns>
+        /// <param name="context">Parser context</param>
+        /// <param name="mnemonic">Instruction mnemonic</param>
+        /// <returns>Runnable code</returns>
         private static byte[] GenerateCode(FSMContext context, string mnemonic)
         {
             var list = new List<byte>();
@@ -385,16 +439,28 @@ namespace Virtual16.Nodes
             return list.ToArray();
         }
 
+
+        /// <summary>
+        /// Parses given assembler instruction
+        /// </summary>
+        /// <param name="cmd">Instruction arguments</param>
+        /// <param name="mnemonic">Mnemonic of instruction</param>
+        /// <returns>Runnable code</returns>
+        /// <exception cref="Exception"></exception>
         public static byte[] Parse(string cmd, string mnemonic)
         {
             FSMParser parser = new FSMParser();
             var prevState = parser.State;
             var pprevState = prevState;
 
+            // Parsing
             foreach (var ch in cmd)
             {
                 pprevState = prevState;
                 prevState = parser.State;
+                if (ch == ' ')
+                    continue;
+
                 parser.Input(ch);
 
                 if (parser.State == FSMState.Start)
@@ -406,11 +472,13 @@ namespace Virtual16.Nodes
                 }
             }
 
+            // Adding last argument
             if (parser.State != FSMState.Start && parser.State != FSMState.ClosingBracket)
                 AddArgument(parser, parser.State);
             else if (parser.State == FSMState.ClosingBracket)
                 AddArgument(parser, prevState);
 
+            // Generating runnable code
             try
             {
                 return GenerateCode(parser.Context, mnemonic);
@@ -426,7 +494,7 @@ namespace Virtual16.Nodes
                         msg += ", ";
                 }
 
-                throw new Exception(String.Format("Could not find instruction with parameters {0}", msg));
+                throw new Exception(String.Format("Could not find instruction {0} with parameters {1}", mnemonic, msg));
             }
         }
     }

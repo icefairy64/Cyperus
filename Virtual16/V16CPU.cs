@@ -96,14 +96,20 @@ namespace Virtual16
             if (IP < TempCodeBlockEnd && !execCodeFromNonExecArea)
                 return;
             
+            // Loading instruction
             byte opCode = Virtual16.Memory.LoadByte(Memory, IP);
             Instruction inst = Instruction.Set[opCode];
             ushort sIP = IP;
             byte sHWStatus = Virtual16.Memory.LoadByte(Memory, HWStatusOffset);
+            
+            // Executing
             inst.Implementation(this);
 
+            // Moving instruction pointer if neccessary
             if (IP == sIP)
                 IP += (ushort)(inst.Signature.ArgSize + 1);
+
+            // Checking external HW byte
             byte cHWStatus = Virtual16.Memory.LoadByte(Memory, HWStatusOffset);
             if (sHWStatus != cHWStatus && ExternalHWMemUpdateHandler != null)
                 ExternalHWMemUpdateHandler(this);
@@ -227,6 +233,7 @@ namespace Virtual16
         }
 
         public static readonly ushort HWStatusOffset = 0xFFFF;
+        public static readonly ushort SharedMemOffset = 0xF000;
 
         static readonly ushort TempCodeOffset = 0x0000;
         static readonly ushort TempCodeBlockEnd = 0x1000;

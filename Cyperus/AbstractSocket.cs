@@ -134,6 +134,11 @@ namespace Cyperus
             return conn;
         }
 
+        public void Disconnect(Connection conn)
+        {
+            Connections.Remove(conn.Client);
+        }
+
         public void AcceptConnection(AbstractSocket sender, Connection conn)
         {
             if (!Connections.ContainsKey(sender))
@@ -145,9 +150,7 @@ namespace Cyperus
         public void Destroy()
         {
             foreach (var conn in Connections.Values)
-            {
-                conn.Destroy();
-            }
+                conn.Destroy(false);
 
             Connections.Clear();
         }

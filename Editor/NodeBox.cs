@@ -47,10 +47,11 @@ namespace Cyperus.Designer
         public NodeBox(AbstractNode node, int x, int y)
         {
             Node = node;
-            Fill = (SolidBrush)Brushes.Aquamarine;
+            Fill = (SolidBrush)new SolidBrush(Color.LightBlue);
             Outline = Pens.Black;
             TextFormat = new StringFormat() { Alignment = StringAlignment.Center, LineAlignment = StringAlignment.Center };
             SetStyle(ControlStyles.SupportsTransparentBackColor, true);
+            SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
             
             Left = x - DefaultWidth / 2;
             Top = y - DefaultHeight / 2;
@@ -103,17 +104,17 @@ namespace Cyperus.Designer
         protected void AddSockets(IReadOnlyCollection<AbstractSocket> set, int y)
         {
             int n = set.Count;
-            int d = (int)ClientSize.Width / (n > 0 ? n : 1);
+            int d = (int)ClientSize.Width / (n + 1);
             int i = 0;
             foreach (var socket in set)
             {
-                Sockets.Add(new SocketWrapper(this, socket, (d / 2) + i * d, y));
+                Sockets.Add(new SocketWrapper(this, socket, (i + 1) * d, y));
                 i++;
             }
         }
 
         /// <summary>
-        /// Flashes socket on activity
+        /// Flashes socket on its activity
         /// </summary>
         /// <param name="sender">Node that socket belongs to</param>
         /// <param name="socket">Socket that was active</param>
@@ -121,10 +122,15 @@ namespace Cyperus.Designer
         protected async Task SocketActivityHandler(AbstractNode sender, object socket)
         {
             var target = Sockets.Find(obj => obj.Socket == socket);
+            if (target.Flash)
+                return;
+
             target.Flash = true;
+            // Executing Refresh method in UI thread
             Invoke(new MethodInvoker(() => Refresh()));
             await Task.Run(() => Thread.Sleep(SocketFlashDelay));
             target.Flash = false;
+            // Executing Refresh method in UI thread
             Invoke(new MethodInvoker(() => Refresh()));
         }
 
@@ -136,13 +142,19 @@ namespace Cyperus.Designer
             Draw(e.Graphics);
         }
 
+        /// <summary>
+        /// Calculates distance between two points
+        /// </summary>
+        /// <param name="a">First point</param>
+        /// <param name="b">Second point</param>
+        /// <returns></returns>
         protected int GetDistance(Point a, Point b)
         {
             return (int)(Math.Sqrt((a.X - b.X) * (a.X - b.X) + (a.Y - b.Y) * (a.Y - b.Y)));
         }
 
         /// <summary>
-        /// Gets socket within [SockerRadius * 2] distance from given point
+        /// Gets socket within [SocketRadius * 2] distance from given point
         /// </summary>
         /// <param name="location">Point</param>
         /// <returns></returns>
@@ -167,7 +179,7 @@ namespace Cyperus.Designer
 
                 // Removing connection
                 var conn = socket.PopConnection();
-                conn.Connection.Destroy();
+                Node.Environment.Disconnect(conn.Connection);
                 conn.Source.Owner.RemoveConnection(conn);
                 conn.Destination.RemoveConnection(conn);
                 Parent.Refresh();
@@ -190,7 +202,6 @@ namespace Cyperus.Designer
             base.OnMouseMove(e);
             
             // Setting tooltip
-
             var socket = GetSocketAtPoint(e.Location);
             string str = null;
             if (socket == null)
@@ -202,7 +213,6 @@ namespace Cyperus.Designer
                 Tip.SetToolTip(this, str);
 
             // Dragging
-
             if (!IsDragged)
                 return;
 
@@ -249,6 +259,7 @@ namespace Cyperus.Designer
             if (ic == null)
                 return;
 
+            // Connecting
             var conn = new ConnectionWrapper(src, dest, ic);
             src.Owner.AddConnection(conn);
             dest.AddConnection(conn);

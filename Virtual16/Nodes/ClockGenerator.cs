@@ -10,7 +10,7 @@ namespace Virtual16.Nodes
 {
     public class ClockGenerator : Producer
     {
-        public int Interval = 100;
+        public int Interval = 10;
         
         protected readonly Socket<object> Output;
         

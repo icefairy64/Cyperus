@@ -72,6 +72,12 @@ namespace Cyperus
             return conn;
         }
 
+        public void Disconnect(Connection conn)
+        {
+            conn.Destroy();
+            FConnections.Remove(conn);
+        }
+
         public void Save(string filename)
         {
             Dependencies.Clear();

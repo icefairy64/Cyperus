@@ -18,9 +18,14 @@ namespace Cyperus
             Client = client;
         }
         
-        public void Destroy()
+        public void Destroy(bool disconnectSockets = true)
         {
             Server.RemoveClient(Client);
+            if (disconnectSockets)
+            {
+                Server.Disconnect(this);
+                Client.Disconnect(this);
+            }
         }
 
         public bool Equals(Connection obj)
