@@ -90,7 +90,7 @@ namespace Cyperus.Designer
 
         private void TypesList_MouseDown(object sender, MouseEventArgs e)
         {
-            if (TypesList.SelectedIndex < 0)
+            if (TypesList.SelectedIndex < 0 || TypesList.SelectedIndex >= Program.TypesByAssembly[Program.VisibleAssemblies[AssembliesList.SelectedIndex]].Length)
                 return;
 
             DoDragDrop(new NodeCreationContainer((Type)Program.TypesByAssembly[Program.VisibleAssemblies[AssembliesList.SelectedIndex]][TypesList.SelectedIndex]), DragDropEffects.Move);

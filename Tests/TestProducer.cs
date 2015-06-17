@@ -22,7 +22,7 @@ namespace Cyperus.Tests
             Console.WriteLine("Created producer");
         }
 
-        protected override void DoProduce()
+        protected override void Produce()
         {
             Console.WriteLine("Start producing");
 

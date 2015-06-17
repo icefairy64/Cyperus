@@ -234,7 +234,7 @@ namespace Cyperus.Designer
 
             // Discarding drop if criteria haven't met
             if (socket != null && socket.Socket != cont.Source && ((AbstractSocket)socket.Socket).AcceptsDataType(((AbstractSocket)cont.Source.Socket).DataType)
-                    && ((AbstractSocket)cont.Source.Socket).Kind != ((AbstractSocket)socket.Socket).Kind)
+                    && ((AbstractSocket)cont.Source.Socket).Kind != ((AbstractSocket)socket.Socket).Kind && socket.Owner != cont.Source.Owner)
                 drgevent.Effect = DragDropEffects.Link;
             else
                 drgevent.Effect = DragDropEffects.None;

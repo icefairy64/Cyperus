@@ -77,12 +77,14 @@
             this.loadEnvironmentToolStripMenuItem.Name = "loadEnvironmentToolStripMenuItem";
             this.loadEnvironmentToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
             this.loadEnvironmentToolStripMenuItem.Text = "Load environment...";
+            this.loadEnvironmentToolStripMenuItem.Visible = false;
             // 
             // saveEnvironmentToolStripMenuItem
             // 
             this.saveEnvironmentToolStripMenuItem.Name = "saveEnvironmentToolStripMenuItem";
             this.saveEnvironmentToolStripMenuItem.Size = new System.Drawing.Size(186, 22);
             this.saveEnvironmentToolStripMenuItem.Text = "Save environment...";
+            this.saveEnvironmentToolStripMenuItem.Visible = false;
             // 
             // ManageAssemblies
             // 
@@ -103,6 +105,7 @@
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
             this.aboutToolStripMenuItem.Size = new System.Drawing.Size(52, 20);
             this.aboutToolStripMenuItem.Text = "About";
+            this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
             // NodeContextMenu
             // 
@@ -116,7 +119,7 @@
             this.pauseToolStripMenuItem,
             this.stopToolStripMenuItem});
             this.NodeContextMenu.Name = "NodeContextMenu";
-            this.NodeContextMenu.Size = new System.Drawing.Size(155, 186);
+            this.NodeContextMenu.Size = new System.Drawing.Size(155, 164);
             this.NodeContextMenu.Opening += new System.ComponentModel.CancelEventHandler(this.NodeContextMenu_Opening);
             // 
             // propertiesToolStripMenuItem

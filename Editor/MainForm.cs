@@ -298,5 +298,10 @@ namespace Cyperus.Designer
         {
             NodeEnvironment.Destroy();
         }
+
+        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            (new AboutForm()).Show();
+        }
     }
 }

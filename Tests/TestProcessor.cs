@@ -19,7 +19,7 @@ namespace Cyperus.Tests
             Dest = AddOutput<int>("Dest");
         }
 
-        protected override async Task<object> ProcessData(object data)
+        protected override async Task<object> ProcessData(ISender sender, object data)
         {
             Console.WriteLine("Processing: {0} -> {1}", (int)data, 2 * (int)data);
             return 2 * (int)data;
